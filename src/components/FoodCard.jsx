@@ -9,7 +9,7 @@ const FALLBACK_IMAGE = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400
 /**
  * FoodCard Component
  * Styled after GoodBite aesthetic with Rupee (₹) pricing, Indian cuisine tags,
- * Food ID badge, and "+ Add to cart" / "View your cart ->" controls.
+ * veg/non-veg badge, Food ID badge, and "+ Add to cart" / "View your cart ->" controls.
  */
 export const FoodCard = memo(function FoodCard({
   food,
@@ -24,6 +24,7 @@ export const FoodCard = memo(function FoodCard({
     foodIdNumber = id,
     name,
     cuisine = 'INDIAN',
+    isVeg,
     price,
     rating,
     reviewsCount,
@@ -65,7 +66,15 @@ export const FoodCard = memo(function FoodCard({
 
       {/* Content */}
       <div className="card-content">
-        <div className="card-cuisine">{cuisine}</div>
+        <div className="card-meta-header">
+          <span className="card-cuisine">{cuisine}</span>
+          {isVeg !== undefined && (
+            <span className={`dietary-badge ${isVeg ? 'veg' : 'non-veg'}`}>
+              <span className="dietary-dot" />
+              <span>{isVeg ? 'Veg' : 'Non-Veg'}</span>
+            </span>
+          )}
+        </div>
 
         <h3 className="food-title" onClick={() => onViewDetails && onViewDetails(food)}>
           {name}

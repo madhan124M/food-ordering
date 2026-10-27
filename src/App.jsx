@@ -140,6 +140,7 @@ export function App() {
             <nav className="header-nav-links" aria-label="Primary Navigation">
               <a href="#" className="nav-link active">Home</a>
               <a href="#explore-menu" className="nav-link">Explore menu</a>
+              <a href="#explore-menu" className="nav-link">Browse categories</a>
               <a href="#about" className="nav-link">About</a>
             </nav>
 
@@ -379,6 +380,12 @@ export function App() {
             />
           </Suspense>
         )}
+
+        {/* Floating Quick Browse Menu Button */}
+        <a href="#explore-menu" className="floating-browse-menu-btn" aria-label="Quick Browse Menu">
+          <span>🍽️</span>
+          <span>Browse Menu</span>
+        </a>
 
         {/* Accessible GoodBite Footer */}
         <footer id="about" className="app-footer" role="contentinfo">
