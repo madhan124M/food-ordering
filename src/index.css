@@ -248,6 +248,23 @@ body {
   font-weight: 700;
 }
 
+.user-profile-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-auth-header.signout {
+  color: var(--accent-rose);
+  font-size: 0.8rem;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-auth-header.signout:hover {
+  background-color: #fef2f2;
+}
+
 .user-name {
   font-size: 0.85rem;
   font-weight: 600;

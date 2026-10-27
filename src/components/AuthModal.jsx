@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { CloseIcon } from './common/Icons';
+import { generateJwtToken, setAuthToken } from '../utils/storage';
 
 /**
  * AuthModal Component
  * Implements exact "Create your account" and "Sign in" screens from GoodBite design.
+ * Generates and saves authentication token to localStorage under 'token'.
  */
 export function AuthModal({
   isOpen,
@@ -63,7 +65,10 @@ export function AuthModal({
         setErrorMessage('Passwords do not match.');
         return;
       }
-      onSuccess && onSuccess({ name: formData.fullName, email: formData.email });
+      const profile = { name: formData.fullName, email: formData.email };
+      const token = generateJwtToken(profile);
+      setAuthToken(token);
+      onSuccess && onSuccess({ ...profile, token });
       onClose();
     } else {
       if (formData.email.toLowerCase().includes('rejected')) {
@@ -75,7 +80,10 @@ export function AuthModal({
         return;
       }
       const displayName = formData.email.split('@')[0] || 'Foodie';
-      onSuccess && onSuccess({ name: displayName, email: formData.email });
+      const profile = { name: displayName, email: formData.email };
+      const token = generateJwtToken(profile);
+      setAuthToken(token);
+      onSuccess && onSuccess({ ...profile, token });
       onClose();
     }
   };

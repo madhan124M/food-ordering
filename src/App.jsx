@@ -4,7 +4,16 @@ import Cart from './components/Cart';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import { CATEGORIES, FOOD_ITEMS } from './data/foodItems';
 import { CartIcon } from './components/common/Icons';
-import { validateSearchQuery } from './utils/security';
+import {
+  STORAGE_KEYS,
+  getStorageItem,
+  setStorageItem,
+  removeStorageItem,
+  getAuthToken,
+  setAuthToken,
+  removeAuthToken,
+  generateJwtToken
+} from './utils/storage';
 
 // Experiment 2 a & b: Implement lazy loading and code splitting using dynamic imports
 const FoodDetailModal = lazy(() => import('./components/FoodDetailModal'));
@@ -12,18 +21,85 @@ const CheckoutModal = lazy(() => import('./components/CheckoutModal'));
 const AuthModal = lazy(() => import('./components/AuthModal'));
 
 export function App() {
-  const [foods] = useState(FOOD_ITEMS);
+  // 1. LocalStorage key 'goodbite_custom_foods' for persisting extra dishes
+  const [foods, setFoods] = useState(() => {
+    const saved = getStorageItem(STORAGE_KEYS.FOODS, null);
+    if (saved && Array.isArray(saved) && saved.length > 0) {
+      return saved;
+    }
+    return FOOD_ITEMS;
+  });
+
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [cart, setCart] = useState({}); // { [foodId]: { ...food, quantity } }
+
+  // 2. LocalStorage key 'goodbite_cart' for persisting cart across reloads
+  const [cart, setCart] = useState(() => {
+    return getStorageItem(STORAGE_KEYS.CART, {});
+  });
+
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeFoodDetail, setActiveFoodDetail] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
-  const [userProfile, setUserProfile] = useState(null);
+
+  // 3. LocalStorage key 'goodbite_user' for persisting logged in profile
+  const [userProfile, setUserProfile] = useState(() => {
+    return getStorageItem(STORAGE_KEYS.USER, { name: 'Madhan Kumar', email: 'madhan219@gmail.com' });
+  });
+
+  // 4. LocalStorage key 'token' for JWT auth token
+  const [authToken, setAuthTokenState] = useState(() => {
+    let token = getAuthToken();
+    if (!token) {
+      token = generateJwtToken({ name: 'Madhan Kumar', email: 'madhan219@gmail.com' });
+      setAuthToken(token);
+    }
+    return token;
+  });
+
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [toastMessage, setToastMessage] = useState(null);
+
+  // Sync cart to localStorage whenever it changes
+  useEffect(() => {
+    setStorageItem(STORAGE_KEYS.CART, cart);
+  }, [cart]);
+
+  // Sync foods to localStorage whenever new dishes are added
+  useEffect(() => {
+    setStorageItem(STORAGE_KEYS.FOODS, foods);
+  }, [foods]);
+
+  // Sync user profile to localStorage
+  useEffect(() => {
+    if (userProfile) {
+      setStorageItem(STORAGE_KEYS.USER, userProfile);
+    } else {
+      removeStorageItem(STORAGE_KEYS.USER);
+    }
+  }, [userProfile]);
+
+  // Seed and verify 'token' key in localStorage so it's always available in console
+  useEffect(() => {
+    let token = getAuthToken();
+    if (!token) {
+      token = generateJwtToken(userProfile || { name: 'Madhan Kumar', email: 'madhan219@gmail.com' });
+      setAuthToken(token);
+      setAuthTokenState(token);
+    }
+
+    // Expose convenient test function in browser window
+    if (typeof window !== 'undefined') {
+      window.getToken = () => localStorage.getItem('token');
+      console.log(
+        '%c[GoodBite] Auth token active in localStorage! Try running: localStorage.getItem("token")',
+        'background: #1f4e38; color: #ffffff; padding: 4px 8px; border-radius: 4px; font-weight: bold;',
+        localStorage.getItem('token')
+      );
+    }
+  }, [userProfile]);
 
   // Monitor network status for PWA offline detection (Experiment 2d)
   useEffect(() => {
@@ -149,12 +225,27 @@ export function App() {
               <a href="#about" className="nav-link">About</a>
             </nav>
 
-            {/* Header Right Actions: Profile & Your Cart */}
+            {/* Header Right Actions: Profile, Token Logout & Your Cart */}
             <div className="header-actions">
               {userProfile ? (
-                <div className="user-profile-badge" title={`Signed in as ${userProfile.email}`}>
-                  <span className="user-avatar-initial">{userProfile.name.charAt(0).toUpperCase()}</span>
-                  <span className="user-name">{userProfile.name}</span>
+                <div className="user-profile-group">
+                  <div className="user-profile-badge" title={`Signed in as ${userProfile.email}`}>
+                    <span className="user-avatar-initial">{userProfile.name.charAt(0).toUpperCase()}</span>
+                    <span className="user-name">{userProfile.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-auth-header signout"
+                    onClick={() => {
+                      setUserProfile(null);
+                      setAuthTokenState(null);
+                      removeAuthToken();
+                      showToast('Logged out. Token cleared from localStorage.');
+                    }}
+                    title="Logout & remove token from localStorage"
+                  >
+                    Logout
+                  </button>
                 </div>
               ) : (
                 <button
@@ -381,7 +472,11 @@ export function App() {
               onClose={() => setIsAuthOpen(false)}
               onSuccess={(profile) => {
                 setUserProfile(profile);
-                showToast(`Welcome, ${profile.name}!`);
+                if (profile.token) {
+                  setAuthTokenState(profile.token);
+                }
+                showToast(`Welcome, ${profile.name}! Token saved.`);
+                console.log('%c[GoodBite] Token saved to localStorage["token"]:', 'color: #16a34a; font-weight: bold;', localStorage.getItem('token'));
               }}
             />
           </Suspense>
