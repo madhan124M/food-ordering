@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import FoodCard from './FoodCard';
+import AddDishModal from './AddDishModal';
 import { SearchIcon, CloseIcon } from './common/Icons';
 
 /**
  * FoodList Component
  * Displays GoodBite search input, category filters, dietary browser pills,
- * sorting selector, and an interactive Menu Category Browser modal.
+ * sorting selector, interactive Menu Category Browser modal, and Add Extra Dish modal.
  */
 export function FoodList({
   foods = [],
@@ -18,12 +19,14 @@ export function FoodList({
   onAddToCart,
   onUpdateQuantity,
   onViewDetails,
-  onOpenCart
+  onOpenCart,
+  onAddNewDish
 }) {
   // Browser state options
   const [dietaryFilter, setDietaryFilter] = useState('all'); // 'all' | 'veg' | 'non-veg' | 'top-rated' | 'budget'
   const [sortBy, setSortBy] = useState('recommended'); // 'recommended' | 'price-asc' | 'price-desc' | 'rating-desc'
   const [isMenuBrowserOpen, setIsMenuBrowserOpen] = useState(false);
+  const [isAddDishOpen, setIsAddDishOpen] = useState(false);
 
   // Filtered and sorted dishes
   const filteredFoods = useMemo(() => {
@@ -109,6 +112,17 @@ export function FoodList({
           >
             <span>📖</span>
             <span>Browse Menu</span>
+          </button>
+
+          {/* Add Extra Dish Button */}
+          <button
+            type="button"
+            className="btn-add-extra-dish"
+            onClick={() => setIsAddDishOpen(true)}
+            aria-label="Add extra dish to menu"
+          >
+            <span>➕</span>
+            <span>Add Extra Dish</span>
           </button>
         </div>
 
@@ -330,6 +344,16 @@ export function FoodList({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Extra Dish Modal */}
+      {isAddDishOpen && (
+        <AddDishModal
+          isOpen={isAddDishOpen}
+          onClose={() => setIsAddDishOpen(false)}
+          onAddDish={onAddNewDish}
+          categories={categories}
+        />
       )}
     </section>
   );

@@ -51,6 +51,11 @@ export function App() {
     setSearchQuery(sanitized);
   }, []);
 
+  const handleAddNewDish = useCallback((newDish) => {
+    setFoods((prev) => [newDish, ...prev]);
+    showToast(`Added "${newDish.name}" to menu!`);
+  }, []);
+
   const handleAddToCart = useCallback((food, addQty = 1) => {
     setCart((prev) => {
       const existing = prev[food.id];
@@ -303,6 +308,7 @@ export function App() {
             onUpdateQuantity={handleUpdateQuantity}
             onViewDetails={(food) => setActiveFoodDetail(food)}
             onOpenCart={() => setIsCartOpen(true)}
+            onAddNewDish={handleAddNewDish}
           />
         </main>
 
