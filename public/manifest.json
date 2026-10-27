@@ -1,0 +1,25 @@
+{
+  "short_name": "CraveZone",
+  "name": "CraveZone Gourmet Food Ordering",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./",
+  "background_color": "#090d16",
+  "theme_color": "#f59e0b",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "./",
+  "description": "Premium artisan food ordering experience with live cart, search, and fast delivery."
+}
